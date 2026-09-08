@@ -36,59 +36,81 @@ class FavoritesScreen extends ConsumerWidget {
             ),
         ],
       ),
-      body: favorites.when(
-        loading: () => const CustomScrollView(
-          slivers: [SliverProductGridSkeleton(itemCount: 4)],
-        ),
-        error: (error, _) => ErrorView(
-          error: error,
-          onRetry: () {
-            ref.invalidate(favoritesProvider);
-            ref.read(productsProvider.notifier).refresh();
-          },
-        ),
-        data: (products) {
-          if (products.isEmpty) {
-            return EmptyState(
-              icon: Icons.favorite_border,
-              title: 'No favorites yet',
-              message:
-                  'Tap the heart on a product to keep it here. '
-                  'Your list stays on this device.',
-              actionLabel: 'Browse the shop',
-              onAction: () =>
-                  ref.read(navigationProvider.notifier).select(AppTab.shop),
-            );
-          }
-
-          return CustomScrollView(
+      body: RefreshIndicator(
+        color: AppColors.accent,
+        backgroundColor: AppColors.surfaceAlt,
+        onRefresh: () async {
+          ref.invalidate(favoritesProvider);
+          await ref.read(productsProvider.notifier).refresh();
+        },
+        // Every branch is a scroll view, so pull to refresh works in all
+        // three states.
+        child: favorites.when(
+          loading: () => const CustomScrollView(
+            slivers: [SliverProductGridSkeleton(itemCount: 4)],
+          ),
+          error: (error, _) => CustomScrollView(
             slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.page,
-                    AppSpacing.lg,
-                    AppSpacing.page,
-                    AppSpacing.lg,
-                  ),
-                  child: Text(
-                    '${products.length} SAVED',
-                    style: AppTypography.labelSmall,
-                  ),
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: ErrorView(
+                  error: error,
+                  onRetry: () {
+                    ref.invalidate(favoritesProvider);
+                    ref.read(productsProvider.notifier).refresh();
+                  },
                 ),
               ),
-              SliverProductGrid(
-                products: products,
-                onTapProduct: (product) =>
-                    AppRouter.openProduct(context, product.id),
-                isFavorite: (_) => true,
-                onToggleFavorite: (product) =>
-                    ref.read(favoritesProvider.notifier).toggle(product.id),
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxl)),
             ],
-          );
-        },
+          ),
+          data: (products) => CustomScrollView(
+            slivers: products.isEmpty
+                ? [
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: EmptyState(
+                        icon: Icons.favorite_border,
+                        title: 'No favorites yet',
+                        message:
+                            'Tap the heart on a product to keep it here. '
+                            'Your list stays on this device.',
+                        actionLabel: 'Browse the shop',
+                        onAction: () => ref
+                            .read(navigationProvider.notifier)
+                            .select(AppTab.shop),
+                      ),
+                    ),
+                  ]
+                : [
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.page,
+                          AppSpacing.lg,
+                          AppSpacing.page,
+                          AppSpacing.lg,
+                        ),
+                        child: Text(
+                          '${products.length} SAVED',
+                          style: AppTypography.labelSmall,
+                        ),
+                      ),
+                    ),
+                    SliverProductGrid(
+                      products: products,
+                      onTapProduct: (product) =>
+                          AppRouter.openProduct(context, product.id),
+                      isFavorite: (_) => true,
+                      onToggleFavorite: (product) => ref
+                          .read(favoritesProvider.notifier)
+                          .toggle(product.id),
+                    ),
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: AppSpacing.xxl),
+                    ),
+                  ],
+          ),
+        ),
       ),
     );
   }

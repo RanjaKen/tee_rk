@@ -59,6 +59,9 @@ class ProductCard extends StatelessWidget {
                     right: 0,
                     child: IconButton(
                       onPressed: onToggleFavorite,
+                      tooltip: isFavorite
+                          ? 'Remove from favorites'
+                          : 'Save to favorites',
                       iconSize: 18,
                       visualDensity: VisualDensity.compact,
                       icon: Icon(

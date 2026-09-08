@@ -3,13 +3,33 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/product.dart';
 import '../repositories/product_repository.dart';
 
+/// Forces the catalog to fail, so the error state can be inspected from
+/// the running app (Profile > Developer).
+class SimulateNetworkErrorNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void set(bool value) => state = value;
+
+  void toggle() => state = !state;
+}
+
+final simulateNetworkErrorProvider =
+    NotifierProvider<SimulateNetworkErrorNotifier, bool>(
+      SimulateNetworkErrorNotifier.new,
+    );
+
 /// Single injection point for the catalog source.
 ///
 /// Overriding this provider in a `ProviderScope` swaps the whole data
-/// layer (tests, error demos, a future HTTP repository).
-final productRepositoryProvider = Provider<ProductRepository>(
-  (ref) => FakeProductRepository(),
-);
+/// layer (tests, error demos, a future HTTP repository). It watches
+/// [simulateNetworkErrorProvider], so flipping that switch rebuilds every
+/// dependent provider into its error state.
+final productRepositoryProvider = Provider<ProductRepository>((ref) {
+  return FakeProductRepository(
+    shouldFail: ref.watch(simulateNetworkErrorProvider),
+  );
+});
 
 /// Owns the catalog as an [AsyncValue]: loading / error / data.
 class ProductsNotifier extends AsyncNotifier<List<Product>> {

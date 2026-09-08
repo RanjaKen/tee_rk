@@ -10,6 +10,7 @@ import '../../models/user_profile.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/favorites_provider.dart';
 import '../../providers/navigation_provider.dart';
+import '../../providers/product_providers.dart';
 import '../../providers/profile_providers.dart';
 import '../../widgets/common/error_view.dart';
 import '../../widgets/common/rk_app_bar.dart';
@@ -44,6 +45,7 @@ class ProfileScreen extends ConsumerWidget {
             const _OrdersSection(),
             const _ShortcutsSection(),
             const _SettingsSection(),
+            const _DeveloperSection(),
             const _AboutSection(),
             const SizedBox(height: AppSpacing.xxl),
           ],
@@ -266,6 +268,30 @@ class _SettingsSection extends ConsumerWidget {
           description: 'Ping me when a saved item goes on sale.',
           value: settings.priceAlerts,
           onChanged: notifier.setPriceAlerts,
+        ),
+      ],
+    );
+  }
+}
+
+/// Switch that forces the catalog into its error state, so loading,
+/// error and retry can be checked from the running app.
+class _DeveloperSection extends ConsumerWidget {
+  const _DeveloperSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      children: [
+        const SectionHeader(title: 'DEVELOPER'),
+        _SettingSwitch(
+          label: 'SIMULATE NETWORK ERROR',
+          description:
+              'Force the catalog to fail, to preview the error and retry '
+              'states.',
+          value: ref.watch(simulateNetworkErrorProvider),
+          onChanged: (value) =>
+              ref.read(simulateNetworkErrorProvider.notifier).set(value),
         ),
       ],
     );

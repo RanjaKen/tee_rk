@@ -8,6 +8,7 @@ import '../../models/product.dart';
 import '../../providers/favorites_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../../providers/product_providers.dart';
+import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/error_view.dart';
 import '../../widgets/common/rk_app_bar.dart';
 import '../../widgets/common/section_header.dart';
@@ -66,15 +67,19 @@ class HomeScreen extends ConsumerWidget {
             error: error,
             onRetry: () => ref.read(productsProvider.notifier).refresh(),
           ),
-          data: (products) => _Feed(
-            products: products,
-            featured: ref.watch(featuredProductsProvider).value ?? const [],
-            newArrivals: ref.watch(newArrivalsProvider).value ?? const [],
-            onSeeAll: () =>
-                ref.read(navigationProvider.notifier).select(AppTab.shop),
-            onOpenProduct: (product) =>
-                AppRouter.openProduct(context, product.id),
-          ),
+          data: (products) => products.isEmpty
+              ? const _EmptyScroll()
+              : _Feed(
+                  products: products,
+                  featured:
+                      ref.watch(featuredProductsProvider).value ?? const [],
+                  newArrivals:
+                      ref.watch(newArrivalsProvider).value ?? const [],
+                  onSeeAll: () =>
+                      ref.read(navigationProvider.notifier).select(AppTab.shop),
+                  onOpenProduct: (product) =>
+                      AppRouter.openProduct(context, product.id),
+                ),
         ),
       ),
     );
@@ -189,6 +194,27 @@ class _Feed extends ConsumerWidget {
           ),
         ),
         const SliverToBoxAdapter(child: StoreFooter()),
+      ],
+    );
+  }
+}
+
+/// Catalog loaded but empty: still scrollable so pull to refresh works.
+class _EmptyScroll extends StatelessWidget {
+  const _EmptyScroll();
+
+  @override
+  Widget build(BuildContext context) {
+    return const CustomScrollView(
+      slivers: [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: EmptyState(
+            icon: Icons.inventory_2_outlined,
+            title: 'Nothing in store yet',
+            message: 'The next drop is on its way. Pull down to refresh.',
+          ),
+        ),
       ],
     );
   }
