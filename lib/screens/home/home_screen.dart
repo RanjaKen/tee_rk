@@ -5,6 +5,7 @@ import '../../core/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../models/product.dart';
+import '../../providers/favorites_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../../providers/product_providers.dart';
 import '../../widgets/common/error_view.dart';
@@ -80,7 +81,7 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-class _Feed extends StatelessWidget {
+class _Feed extends ConsumerWidget {
   const _Feed({
     required this.products,
     required this.featured,
@@ -96,7 +97,7 @@ class _Feed extends StatelessWidget {
   final void Function(Product product) onOpenProduct;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final hero = featured.isNotEmpty ? featured.first : products.first;
     final pair = featured.skip(1).take(2).toList();
     final secondBanner = featured.length > 3 ? featured[3] : products.last;
@@ -134,6 +135,12 @@ class _Feed extends StatelessWidget {
                           product: product,
                           useHero: false,
                           onTap: () => onOpenProduct(product),
+                          isFavorite: ref.watch(
+                            isFavoriteProvider(product.id),
+                          ),
+                          onToggleFavorite: () => ref
+                              .read(favoritesProvider.notifier)
+                              .toggle(product.id),
                         ),
                       ),
                       if (product != pair.last)
@@ -163,6 +170,9 @@ class _Feed extends StatelessWidget {
         SliverProductGrid(
           products: newArrivals.take(HomeScreen._newArrivalsPreview).toList(),
           onTapProduct: onOpenProduct,
+          isFavorite: (product) => ref.watch(isFavoriteProvider(product.id)),
+          onToggleFavorite: (product) =>
+              ref.read(favoritesProvider.notifier).toggle(product.id),
         ),
         SliverToBoxAdapter(
           child: Padding(

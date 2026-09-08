@@ -6,6 +6,7 @@ import '../../core/router/app_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../../providers/favorites_provider.dart';
 import '../../providers/product_providers.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/error_view.dart';
@@ -80,6 +81,10 @@ class SearchScreen extends ConsumerWidget {
                   products: products,
                   onTapProduct: (product) =>
                       AppRouter.openProduct(context, product.id),
+                  isFavorite: (product) =>
+                      ref.watch(isFavoriteProvider(product.id)),
+                  onToggleFavorite: (product) =>
+                      ref.read(favoritesProvider.notifier).toggle(product.id),
                 ),
                 const SliverToBoxAdapter(
                   child: SizedBox(height: AppSpacing.xxl),

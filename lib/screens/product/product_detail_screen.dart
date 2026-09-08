@@ -8,6 +8,7 @@ import '../../core/theme/app_typography.dart';
 import '../../core/utils/price_formatter.dart';
 import '../../models/product.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/favorites_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../../providers/product_providers.dart';
 import '../../providers/selected_size_provider.dart';
@@ -73,6 +74,7 @@ class _DetailBody extends ConsumerWidget {
           expandedHeight: 420,
           backgroundColor: AppColors.background,
           leading: const _BackButton(),
+          actions: [_FavoriteButton(productId: product.id)],
           flexibleSpace: FlexibleSpaceBar(
             background: ProductImage(
               path: product.image,
@@ -174,6 +176,52 @@ class _DetailBody extends ConsumerWidget {
     final day = date.day.toString().padLeft(2, '0');
     final month = date.month.toString().padLeft(2, '0');
     return '$day.$month.${date.year}';
+  }
+}
+
+/// Heart toggle backed by [favoritesProvider].
+class _FavoriteButton extends ConsumerWidget {
+  const _FavoriteButton({required this.productId});
+
+  final String productId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isFavorite = ref.watch(isFavoriteProvider(productId));
+
+    return Padding(
+      padding: const EdgeInsets.only(right: AppSpacing.sm),
+      child: IconButton(
+        onPressed: () async {
+          final messenger = ScaffoldMessenger.of(context);
+          final saved = !isFavorite;
+          final ok = await ref
+              .read(favoritesProvider.notifier)
+              .toggle(productId);
+
+          messenger
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(
+                  ok
+                      ? (saved ? 'Saved to favorites' : 'Removed from favorites')
+                      : 'Favorites could not be saved on this device.',
+                ),
+              ),
+            );
+        },
+        tooltip: isFavorite ? 'Remove from favorites' : 'Save to favorites',
+        icon: Icon(
+          isFavorite ? Icons.favorite : Icons.favorite_border,
+          color: isFavorite ? AppColors.accent : AppColors.textPrimary,
+        ),
+        style: IconButton.styleFrom(
+          backgroundColor: AppColors.overlay,
+          shape: const CircleBorder(),
+        ),
+      ),
+    );
   }
 }
 
