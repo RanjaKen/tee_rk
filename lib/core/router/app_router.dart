@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../screens/product/product_detail_screen.dart';
+import '../../screens/profile/orders_screen.dart';
 import '../../screens/shell/main_shell.dart';
 import '../../widgets/common/empty_state.dart';
 
@@ -10,6 +11,7 @@ class AppRoutes {
 
   static const String home = '/';
   static const String productDetail = '/product';
+  static const String orders = '/orders';
 }
 
 /// Central route table. The shell owns tab navigation; the router only
@@ -30,6 +32,11 @@ class AppRouter {
         return MaterialPageRoute<void>(
           settings: settings,
           builder: (_) => ProductDetailScreen(productId: id),
+        );
+      case AppRoutes.orders:
+        return MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => const OrdersScreen(),
         );
       default:
         return _unknown(settings);

@@ -4,9 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tee_rk/main.dart';
 import 'package:tee_rk/providers/product_providers.dart';
+import 'package:tee_rk/providers/profile_providers.dart';
 import 'package:tee_rk/providers/favorites_provider.dart';
 import 'package:tee_rk/repositories/favorites_repository.dart';
 import 'package:tee_rk/repositories/product_repository.dart';
+import 'package:tee_rk/repositories/profile_repository.dart';
 import 'package:tee_rk/screens/shell/main_shell.dart';
 import 'package:tee_rk/widgets/product/product_card.dart';
 
@@ -32,6 +34,10 @@ void main() {
           productRepositoryProvider.overrideWithValue(repository),
           favoritesRepositoryProvider.overrideWithValue(
             InMemoryFavoritesRepository(),
+          ),
+          // The shell builds every tab, including the profile.
+          profileRepositoryProvider.overrideWithValue(
+            MockProfileRepository(latency: Duration.zero),
           ),
         ],
         child: const TeeRkApp(),

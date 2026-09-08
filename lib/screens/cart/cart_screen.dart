@@ -11,6 +11,7 @@ import '../../core/utils/price_formatter.dart';
 import '../../models/cart_item.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/navigation_provider.dart';
+import '../../providers/profile_providers.dart';
 import '../../widgets/cart/cart_line_tile.dart';
 import '../../widgets/common/cart_button.dart';
 import '../../widgets/common/empty_state.dart';
@@ -242,7 +243,17 @@ class _CheckoutBar extends ConsumerWidget {
   }
 
   void _checkout(BuildContext context, WidgetRef ref) {
-    final total = ref.read(cartTotalProvider);
+    final items = ref.read(cartProvider);
+    if (items.isEmpty) return;
+
+    // Record the order first: the bag is the source of the order lines.
+    final order = ref
+        .read(ordersProvider.notifier)
+        .placeOrder(
+          items: items,
+          subtotal: ref.read(cartSubtotalProvider),
+          shipping: ref.read(cartShippingProvider),
+        );
     ref.read(cartProvider.notifier).clear();
 
     ScaffoldMessenger.of(context)
@@ -250,8 +261,15 @@ class _CheckoutBar extends ConsumerWidget {
       ..showSnackBar(
         SnackBar(
           content: Text(
-            'Order placed · ${PriceFormatter.format(total)}. '
+            'Order ${order.reference} placed · '
+            '${PriceFormatter.format(order.total)}. '
             'Payment is mocked in this build.',
+          ),
+          action: SnackBarAction(
+            label: 'VIEW',
+            textColor: AppColors.accent,
+            onPressed: () =>
+                Navigator.of(context).pushNamed(AppRoutes.orders),
           ),
         ),
       );
