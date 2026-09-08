@@ -8,16 +8,7 @@ typography with wide tracking, and one red accent.
 
 ---
 
-## Status
 
-| Check | Result |
-|---|---|
-| `flutter analyze` | No issues found |
-| `flutter test` | 81 tests passing |
-| Flutter / Dart | 3.44.9 · Dart 3.12.2 |
-| Runtime dependencies | `flutter_riverpod`, `shared_preferences` |
-
----
 
 ## Features
 
@@ -44,53 +35,9 @@ forces the catalog into its error state.
 
 ---
 
-## Getting started
 
-```bash
-flutter pub get
-flutter run
-```
 
-Tests and static analysis:
 
-```bash
-flutter test
-flutter analyze
-```
-
-Regenerate the launcher icons after changing `assets/icon/app_icon.png`:
-
-```bash
-flutter pub run flutter_launcher_icons
-```
-
-> **Windows desktop only**: building with plugins requires Developer Mode
-> (`start ms-settings:developers`) for symlink support. Android, iOS and web
-> are unaffected.
-
----
-
-## Architecture
-
-Five layers, each depending only on the one below it. UI never reaches past
-the providers, and no widget constructs a repository or holds business rules.
-
-```
-screens/ + widgets/     Presentation. Renders state, forwards intent.
-        │
-providers/              State + business rules (Riverpod only).
-        │
-repositories/           Contracts and their implementations.
-        │
-data/                   Sources: bundled JSON, device storage.
-        │
-models/                 Immutable value objects and parsing.
-```
-
-`core/` sits beside these with theme, routing, constants, errors and utils.
-
-Full detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) ·
-Provider reference: [docs/PROVIDERS.md](docs/PROVIDERS.md)
 
 ### Project structure
 
@@ -140,42 +87,7 @@ resolves saved ids against the catalog.
 
 ---
 
-## Data
 
-Products come from `assets/data/products.json`, read by
-`ProductLocalDataSource` and served by `FakeProductRepository` with a 600 ms
-artificial latency so loading states are visible. No product data is
-hardcoded in a widget.
-
-Prices are **integer Ariary** — the currency has no practical decimals, so
-totals never accumulate floating point error. `PriceFormatter` renders
-`129000` as `129 000 Ar` with no `intl` dependency.
-
-Adding products is a JSON edit; adding photos means dropping files into
-`assets/images/product/` and pointing each item's `image` field at them.
-
-### Persistence
-
-| Data | Where | Lifetime |
-|---|---|---|
-| Favorites | `shared_preferences`, key `tee_rk.favorites.v1` | Survives restart |
-| Cart, orders, settings, filters | Memory | Session |
-
----
-
-## Testing
-
-81 tests across 14 files — unit tests for models, repositories and providers,
-and widget tests for every screen.
-
-```
-test/
-├── core/          price formatting
-├── providers/     catalog, cart, favorites, filters, profile
-├── repositories/  JSON parsing, lookup, failure paths
-├── screens/       catalog, detail, cart, shop filters, profile, states
-└── widget_test    full app boot
-```
 
 Notable cases: favorites persistence verified by rebuilding a fresh
 `ProviderContainer` (equivalent to relaunching the app); order lines asserted
@@ -202,16 +114,7 @@ avoided — the loading skeleton pulses forever and would never settle.
 - **Size selection lives in a provider**, keyed by product id, because
   Riverpod 3's plain `Notifier` cannot read a family argument.
 
----
 
-## Known limitations
-
-This is a front-end assignment build: no backend, no authentication, no
-payment. Checkout records an order locally and clears the bag. The account is
-mock data. Orders and settings are session-scoped. All 16 products currently
-share one photograph, so the grid looks repetitive — that is the asset set,
-not the layout.
-
----
 
 Built with the RanjaKen brand mark. Product data is fictional.
+Author : Andi Andriamalala
